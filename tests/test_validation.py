@@ -6,13 +6,17 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / 'evals'))
-from agent import run_agent
+from agent import SYSTEM_PROMPT, run_agent
 from scenarios import ScenarioTools
 from status_tools import StatusTools
 from test_lab import FakeProvider, tool_call, final
 
 
 class ScenarioTests(unittest.TestCase):
+    def test_system_prompt_limits_historical_claims_to_snapshot_scope(self):
+        self.assertIn('50 incident gần nhất', SYSTEM_PROMPT)
+        self.assertIn('không kết luận rằng không có incident', SYSTEM_PROMPT)
+
     def test_partial_timeout_does_not_affect_github(self):
         tools = ScenarioTools('cloudflare_timeout')
         self.assertEqual(tools.execute('get_status', {'provider': 'cloudflare'})['error'], 'TimeoutError')

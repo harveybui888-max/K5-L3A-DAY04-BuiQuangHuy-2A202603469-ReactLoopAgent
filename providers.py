@@ -64,7 +64,13 @@ class Provider:
                 if m.get('content'):
                     blocks.append({'type': 'text', 'text': m['content']})
                 for call in m.get('tool_calls', []):
-                    blocks.append({'type': 'tool_use', 'id': call['id'], 'name': call['function']['name'], 'input': json.loads(call['function']['arguments'])})
+                    try:
+                        arguments = json.loads(call['function']['arguments'])
+                    except (json.JSONDecodeError, TypeError):
+                        arguments = {}
+                    if not isinstance(arguments, dict):
+                        arguments = {}
+                    blocks.append({'type': 'tool_use', 'id': call['id'], 'name': call['function']['name'], 'input': arguments})
                 native.append({'role': 'assistant', 'content': blocks})
             elif m['role'] == 'tool':
                 block = {'type': 'tool_result', 'tool_use_id': m['tool_call_id'], 'content': m['content']}
